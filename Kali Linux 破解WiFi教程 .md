@@ -1,0 +1,118 @@
+# WiFi密码怎么设置才好？
+
+## Kali Linux 破解WiFi密码
+
+## 准备工作
+
+```sh
+$ iwconfig
+```
+
+检查一下网卡是否处理监管状态
+
+<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818125917988.png" alt="image-20220818125917988" style="zoom:50%;" />
+
+
+
+## 1. airmon-ng
+
+​	airmon-ng 包含在 aircrack-ng 套件中，可将网络接口卡置于监控模式。 网卡通常只接受由 NIC 的 MAC 地址定义的以它们为目标的数据包，但是使用 airmon-ng，所有无线数据包，无论它们是否以它们为目标，都将被接受。 应该能够在不与接入点链接或验证的情况下捕获这些数据包。 它用于通过将网络接口置于监控模式来检查接入点的状态。 首先必须将无线网卡配置为打开监控模式，然后如果您认为有任何进程干扰它，请杀死所有后台进程
+
+```sh
+$ airmon-ng check kill && airmon-ng start wlan0
+```
+
+
+
+<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818130043755.png" alt="image-20220818130043755"  />
+
+## 2. airodump-ng
+
+​	airodump-ng 用于列出我们周围的所有网络并查看有关它们的有价值信息。 airodump-ng 的基本功能是嗅探数据包，因此它本质上被编程为在处于监控模式时抓取我们周围的所有数据包。 我们将针对我们周围的所有连接运行它并收集数据，例如连接到网络的客户端数量、它们相应的 MAC 地址、加密方式和通道名称，然后开始瞄准我们的目标网络。当你想破解 wifi 时，你需要捕捉“握手”。握手是个人计算机和无线网络的连接，是网络数据包和个人计算机数据包相遇的时候。通过握手，您不再需要在 wifi 范围内，您可以使用握手和 wifi 名称破解密码（稍后您将了解这一点）。现在您需要捕获通过 wifi 路由器和网络中所有个人计算机发送的所有数据包。有一个问题，比如“如果 MAC 地址用于确保每个数据包都被传递到正确的位置，那么我们如何捕获它？”，答案是“是与否，它用于将数据包发送到正确的位置目的地，我们作为黑客只能接收发送到我们 MAC 地址的数据包，但这仅适用于您的无线网卡的默认模式，即“托管”模式，但是有一种模式可以让我们捕获所有数据包在我们的 Wi-Fi 范围内，不仅是发送到我们设备的 Wi-Fi，因此称为监控模式。”。所以，现在您已经了解了基础知识并准备好实际进行握手。首先，更改 MAC 地址，通过在输入以下命令进入监控模式：
+
+```sh
+$ airodump-ng wlan0
+```
+
+初步广泛扫描一下周边网络情况，选择红色方框中WiFi名为:feeling 尝试一下，后面针对性抓包
+
+<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818130308958.png" alt="image-20220818130308958"  />
+
+你可以看到，当我最后检查 wlan0 模式时，它是监视器，正如你在图像上看到的那样。 所以你已经准备好实际捕获握手，然后很容易通过握手和密码字典文件列表来破解无线网络。每次客户端与目标 AP 关联时，都会发送握手数据包。 因此，为了捕获它，我们将捕获每个发送的数据包。 在本章中，我们将使用名为“airodump-ng”的程序。 该程序使我们能够嗅探和捕获通过网络发送的数据包。 该程序也是预装程序。 抓握手有两个步骤。
+
+
+
+#### 指定目标抓包
+
+```sh
+$ airodump-ng -c 1  --bssid <AP Mac> -w feeling wlan0
+```
+
+
+
+<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818130715245.png" alt="image-20220818130715245"  />
+
+#### 握手成功
+
+<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818130906283.png" alt="image-20220818130906283"  />
+
+## 3. aireplay-ng
+
+​	aireplay-ng 将数据包引入无线网络以创建或加速流量。 来自两个不同来源的数据包可以被 aireplay-ng 捕获。 第一个是现网，第二个是来自已经存在的 pcap 文件的数据包。 Airplay-ng 在针对无线接入点和用户的取消身份验证攻击中很有用。 可以使用 airplay-ng 执行一些攻击,客户端将创建一个可以被 airodump 捕获的数据包，然后 aircrack 从修改后的数据包中破解密钥。 airplay-ng 的其他一些攻击选项包括chopchop、fragment arepreplay 等。
+
+```sh
+$ aireplay-ng --deauth 1000  -a <AP MAC> -c <终端用户MAC> wlan0
+```
+
+
+
+<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818131106975.png" alt="image-20220818131106975"  />
+
+## 4. aircrack-ng
+
+​	aircrack 用于密码破解。 使用airodump捕获所有数据包后，我们可以通过aircrack破解密钥。 它使用 PTW 和 FMS 两种方法破解这些密钥。 PTW 方法分两个阶段完成。 一开始只使用ARP包，只有这样，如果搜索后没有破解密钥，它会使用所有其他捕获的包。 PTW 方法的一个优点是并非所有数据包都用于破解。 在第二种方法中，即 FMS，我们同时使用统计模型和蛮力算法来破解密钥。 也可以使用字典方法。
+
+```sh
+$ aircrack-ng -a2 -w /usr/share/wordlists/sqlmap.txt feeling-01.cap feeling-02.cap  wlan0
+```
+
+通过以上命令结合Kali自带的wordlists里面字典包，成功破解到WiFi密码为：nicaibudao，一共花了：6分31秒。总体来讲拼的是CPU性能和字典质量！！！
+
+
+
+<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818132401096.png" alt="image-20220818132401096"  />
+
+
+
+#### 动态图
+
+![aircrack-ng](/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/aircrack-ng.gif)
+
+## 5. 无线网络安全问题
+
+既然我们知道如何测试所有已知无线加密 (WEP/WPA/WPA2) 的安全性，就可以相对容易地保护我们的网络免受这些攻击，因为我们知道黑客可以用来破解这些加密的所有弱点。
+
+### 5.1. WEP：
+
+​	WEP 是一种古老的加密方式，而且它非常弱，正如我们在课程中看到的那样，无论密码强度如何，即使没有人连接，也有许多方法可以用来破解这种加密方式 网络。 由于 WEP 的工作方式，这些攻击是可能的，我们讨论了 WEP 的弱点以及如何使用它来破解它，其中一些方法甚至可以让您在几分钟内破解密钥。
+
+
+
+### 5.2. WPA/WPA2：
+
+​	WPA 和 WPA2 非常相似，它们之间的唯一区别是用于加密信息的算法，但两种加密的工作方式相同。 WPA/WPA2可以通过两种方式破解。
+
+#### 5.2.1. 如果启用了 WPS 功能
+
+​	那么无论其复杂性如何，都有很大的机会获得密钥，这可以通过利用 WPS 功能的弱点来完成。 WPS 用于允许用户在不输入密钥的情况下连接到他们的无线网络，这是通过按下路由器和他们要连接的设备上的 WPS 按钮来完成的，身份验证使用八位密码进行，黑客可以暴力破解 在相对较短的时间内（平均 10 小时）强制使用此引脚，一旦他们获得正确的引脚，他们可以使用称为 reaver 的工具对引脚进行逆向工程并获得密钥，这一切都是可能的，因为 WPS 该功能使用简单的密码（仅 8 个字符且仅包含数字），因此它不是 WPA/WPA2 的弱点，它是可以在使用 WPA/WPA2 的路由器上启用的功能中的一个弱点，可以利用该功能获取实际 WPA/WPA2 键。
+
+#### 5.2.2 如果未启用 WPS功能
+
+​	那么破解 WPA/WPA2 的唯一方法是使用字典攻击，在这种攻击中，将密码列表（字典）与文件（握手文件）进行比较，以检查是否有任何密码
+网络的实际密钥，因此如果密码表中不存在密码，则攻击者将无法找到密码，拼的是cpu性能和字典文件质量
+
+
+
+## 建议：
+
+**WiFi密码设置长一些、字符类型多一点，总之复杂度高最好**。
