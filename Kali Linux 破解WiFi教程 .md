@@ -6,11 +6,12 @@
 
 ```sh
 $ iwconfig
+$ iwconfig wlan0 mode monitor
 ```
 
 检查一下网卡是否处理监管状态
 
-<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818125917988.png" alt="image-20220818125917988" style="zoom:50%;" />
+<img src="./Kali Linux 破解WiFi教程 .assets/image-20220818125917988.png" alt="image-20220818125917988" style="zoom:50%;" />
 
 
 
@@ -24,7 +25,7 @@ $ airmon-ng check kill && airmon-ng start wlan0
 
 
 
-<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818130043755.png" alt="image-20220818130043755"  />
+<img src="./Kali Linux 破解WiFi教程 .assets/image-20220818130043755.png" alt="image-20220818130043755"  />
 
 ## 2. airodump-ng
 
@@ -36,7 +37,7 @@ $ airodump-ng wlan0
 
 初步广泛扫描一下周边网络情况，选择红色方框中WiFi名为:feeling 尝试一下，后面针对性抓包
 
-<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818130308958.png" alt="image-20220818130308958"  />
+<img src="./Kali Linux 破解WiFi教程 .assets/image-20220818130308958.png" alt="image-20220818130308958"  />
 
 你可以看到，当我最后检查 wlan0 模式时，它是监视器，正如你在图像上看到的那样。 所以你已经准备好实际捕获握手，然后很容易通过握手和密码字典文件列表来破解无线网络。每次客户端与目标 AP 关联时，都会发送握手数据包。 因此，为了捕获它，我们将捕获每个发送的数据包。 在本章中，我们将使用名为“airodump-ng”的程序。 该程序使我们能够嗅探和捕获通过网络发送的数据包。 该程序也是预装程序。 抓握手有两个步骤。
 
@@ -50,11 +51,11 @@ $ airodump-ng -c 1  --bssid <AP Mac> -w feeling wlan0
 
 
 
-<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818130715245.png" alt="image-20220818130715245"  />
+<img src="./Kali Linux 破解WiFi教程 .assets/image-20220818130715245.png" alt="image-20220818130715245"  />
 
 #### 握手成功
 
-<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818130906283.png" alt="image-20220818130906283"  />
+<img src="./Kali Linux 破解WiFi教程 .assets/image-20220818130906283.png" alt="image-20220818130906283"  />
 
 ## 3. aireplay-ng
 
@@ -66,7 +67,7 @@ $ aireplay-ng --deauth 1000  -a <AP MAC> -c <终端用户MAC> wlan0
 
 
 
-<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818131106975.png" alt="image-20220818131106975"  />
+<img src="./Kali Linux 破解WiFi教程 .assets/image-20220818131106975.png" alt="image-20220818131106975"  />
 
 ## 4. aircrack-ng
 
@@ -80,13 +81,13 @@ $ aircrack-ng -a2 -w /usr/share/wordlists/sqlmap.txt feeling-01.cap feeling-02.c
 
 
 
-<img src="/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/image-20220818132401096.png" alt="image-20220818132401096"  />
+<img src="./Kali Linux 破解WiFi教程 .assets/image-20220818132401096.png" alt="image-20220818132401096"  />
 
 
 
 #### 动态图
 
-![aircrack-ng](/Users/zxz/Linux-Command-Tutorial/Kali Linux 破解WiFi教程 .assets/aircrack-ng.gif)
+![aircrack-ng](./Kali Linux 破解WiFi教程 .assets/aircrack-ng.gif)
 
 ## 5. 无线网络安全问题
 
